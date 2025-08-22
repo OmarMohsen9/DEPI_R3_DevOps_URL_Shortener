@@ -4,7 +4,7 @@ DevOps Project for Devops Track under the supervision of Digital Egypt Pioneers 
 - [Omar Mohsen Emam](https://github.com/OmarMohsen9)
 - [Ahmed Anas ElSayed Daba](https://github.com/ahmedanasdev)
 - [Marwa Abdullah Ouf Elzoghby](https://github.com/marwa-elzoghby)
-- [Marwan Ayman](https://github.com/marwanaymann23)
+- [Marwan Ayman Ismail](https://github.com/marwanaymann23)
 - [Sara Darwish](https://github.com/SaraDrwish)
 ## Project Overview
 This project implements best practices of modern DevOps, focusing on building a containerized URL shortener webservice and establishing a complete observability stack around it using Prometheus and Grafana. The entire system is orchestrated locally with Docker Compose, leveraging development, containerization, monitoring, and alerting skills.

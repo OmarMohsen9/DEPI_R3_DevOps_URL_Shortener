@@ -1,29 +1,25 @@
 # URL Shortner Webservice
 DevOps Project for Devops Track under the supervision of Digital Egypt Pioneers Initiative
----
+![Project Banner](https://i.postimg.cc/d1J6k3Jg/faf352fe-d2fc-4699-948e-e45f0f84349c-removebg-preview.png)
 ## Team members
 - [Omar Mohsen Emam](https://github.com/OmarMohsen9)
 - [Ahmed Anas ElSayed Daba](https://github.com/ahmedanasdev)
 - [Marwa Abdullah Ouf Elzoghby](https://github.com/marwa-elzoghby)
 - [Marwan Ayman Ismail](https://github.com/marwanaymann23)
 - [Sara Darwish](https://github.com/SaraDrwish)
----
 ## Project Overview
 This project involves building a simple URL shortener webservice, containerizing it, and implementing monitoring and visualization using Prometheus and Grafana. The entire stack will run locally with Docker and Docker Compose. The aim is not only to create a functional service but also to gain hands-on experience with instrumentation, metrics, dashboards, and alerting.
----
 ## Project Objectives
 * Develop a functional, simple URL shortener web application with REST API endpoints.
 * Containerize the application and its dependencies using Docker for consistent environments.
 * Implement Monitoring by instrumenting the application code to expose custom Prometheus metrics.
 * Visualize Data by building a comprehensive Grafana dashboard to monitor service health and usage patterns in real-time.
-* Ensure Resilience by adding data persistence with Docker volumes and configuring meaningful alerts for operational awareness.
---- 
+* Ensure Resilience by adding data persistence with Docker volumes and configuring meaningful alerts for operational awareness. 
 ## Project Scope
 * Build a local URL shortener service with SQLite.
 * Containerize with Docker & Docker Compose.
 * Expose metrics with Prometheus and visualize in Grafana.
 * Add alerts, persistence, and basic documentation.
----
 ## Project Plan
 The project will be executed in 4 weekly phases.
 ### Week 1 — Build & Containerize
@@ -60,4 +56,3 @@ The project will be executed in 4 weekly phases.
 + Deliverables:
   - Persistent monitoring stack with alerts.
   - Comprehensive documentation.
----

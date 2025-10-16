@@ -1,0 +1,22 @@
+#creation
+#python3 -m venv venv
+
+#to acivate
+#source venv/bin/activate
+
+#Packages:
+fastapi
+sqlalchemy
+pydantic
+python-dotenv
+fastapi[standard]
+
+
+# to deactivate
+#deactivate
+
+#recreation
+#pip install -r requirements.txt
+
+#freeze Dependencies into requirements.txt
+#pip freeze > requirements.txt

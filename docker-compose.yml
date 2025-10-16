@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    container_name: url-shortener-app
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - BASE_URL=http://localhost:9000

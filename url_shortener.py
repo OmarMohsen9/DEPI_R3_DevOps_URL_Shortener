@@ -1,34 +1,51 @@
-from fastapi import FastAPI,HTTPException, Depends
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, HttpUrl
-import string, random,os
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List
-from fastapi.staticfiles import StaticFiles
+import string, random, os, time
 
+# ---- Prometheus imports ----
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+
+# ---- Local imports ----
 from database import Base, engine, get_db
 from models import URL
 
-Base.metadata.create_all(bind=engine)  # create db if doesnt exist
+# ---- DB setup ----
+Base.metadata.create_all(bind=engine)
 
-BASE_URL = os.getenv("BASE_URL", "http://localhost:9000") # local testing change in deployment
-
+# ---- App setup ----
+BASE_URL = os.getenv("BASE_URL", "http://localhost:9000")
 api = FastAPI()
 
+# ---- Define Prometheus Metrics ----
+url_shortened_count = Counter(
+    "url_shortened_total", "Number of URLs successfully shortened"
+)
+redirect_success_count = Counter(
+    "redirect_success_total", "Number of successful redirects"
+)
+lookup_failed_count = Counter(
+    "lookup_failed_total", "Number of failed lookups (404 errors)"
+)
+request_latency = Histogram(
+    "request_latency_seconds", "Request latency in seconds", ["endpoint"]
+)
 
+# ---- Models ----
 class UrlBase(BaseModel):
-    long_url:HttpUrl = Field(..., max_length=512, description='Provided Valid HTTP/HTTPS URL')
+    long_url: HttpUrl = Field(..., max_length=512, description="Provided valid HTTP/HTTPS URL")
 
 
-# post input
 class UrlShorten(UrlBase):
     pass
 
 
-# post response
 class UrlResponse(UrlBase):
-    short_url:HttpUrl = Field(..., max_length=512, description='Full shortened URL pointing to the service endpoint')
+    short_url: HttpUrl = Field(..., max_length=512, description="Shortened URL")
 
 
 class UrlDBEntry(BaseModel):
@@ -42,11 +59,25 @@ class UrlDBEntry(BaseModel):
         from_attributes = True
 
 
+# ---- Utility ----
 def generate_short_code(length=6):
     characters = string.ascii_letters + string.digits
-    return ''.join(random.choice(characters) for _ in range(length))
+    return "".join(random.choice(characters) for _ in range(length))
 
 
+# ---- Middleware for request latency ----
+@api.middleware("http")
+async def add_metrics_middleware(request: Request, call_next):
+    start = time.time()
+    try:
+        response = await call_next(request)
+        return response
+    finally:
+        latency = time.time() - start
+        request_latency.labels(endpoint=request.url.path).observe(latency)
+
+
+# ---- Routes ----
 @api.post("/shorten", response_model=UrlResponse)
 def shorten_url(request: UrlShorten, db: Session = Depends(get_db)):
     short_code = generate_short_code()
@@ -58,21 +89,31 @@ def shorten_url(request: UrlShorten, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_entry)
 
+    # Increment metric
+    url_shortened_count.inc()
+
     return UrlResponse(
         long_url=new_entry.long_url,
-        short_url=f"{BASE_URL}/{new_entry.short_code}"
+        short_url=f"{BASE_URL}/{new_entry.short_code}",
     )
 
+# ---- Prometheus Metrics Endpoint ----
+@api.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @api.get("/{short_code}")
 def redirect_to_original(short_code: str, db: Session = Depends(get_db)):
     entry = db.query(URL).filter(URL.short_code == short_code).first()
 
     if not entry:
+        lookup_failed_count.inc()
         raise HTTPException(status_code=404, detail="Short URL not found")
 
-    entry.clicks += 1  # increment counts for /metrics later
+    entry.clicks += 1
     db.commit()
+
+    redirect_success_count.inc()
 
     return RedirectResponse(url=entry.long_url, status_code=307)
 
@@ -82,4 +123,7 @@ def get_all_urls(db: Session = Depends(get_db)):
     return db.query(URL).all()
 
 
-api.mount("/",StaticFiles(directory="static", html=True), name="static")
+
+
+# ---- Serve static frontend ----
+api.mount("/", StaticFiles(directory="static", html=True), name="static")

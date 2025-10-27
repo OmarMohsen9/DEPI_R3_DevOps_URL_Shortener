@@ -5,18 +5,22 @@
   <title>URL Shortener</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css">
- 
 </head>
 
 <body class="flex flex-col items-center justify-center min-h-screen relative">
 
-  <!-- 🌙 Dark Mode Toggle Button -->
-  <div class="absolute top-6 right-6 z-20">
-    <button id="darkModeToggle"
-      class="bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition-all">
-      🌙 Dark Mode
-    </button>
-  </div>
+  <header class="w-full py-8 px-6 flex justify-between items-center bg-white/40 dark:bg-slate-800/50 shadow-sm backdrop-blur-md fixed top-0 left-0 z-20">
+    <!-- 🌙 Dark Mode Toggle Button -->
+     <div class="flex items-center space-x-3">
+      <h1 class="text-xl font-bold tracking-wide text-gray-600 dark:text-gray-100">🔗  URL Shortener </h1>
+    </div>
+    <div class="absolute top-6 right-6 z-20">
+      <button id="darkModeToggle"
+        class="bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition-all">
+        🌙 Dark Mode
+      </button>
+    </div>
+  </header>
 
   <div class="bubble bg-blue-200 w-32 h-32" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
   <div class="bubble bg-blue-300 w-16 h-16" style="top: 40%; left: 70%; animation-delay: 2s;"></div>
@@ -24,8 +28,8 @@
   <div class="bubble bg-blue-100 w-24 h-24" style="top: 85%; left: 10%; animation-delay: 6s;"></div>
 
   <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md relative z-10 fade-up" style="animation-delay: 0.3s;">
-    <h2 class="text-3xl font-extrabold mb-6 text-gray-800 text-center fade-up" style="animation-delay: 0.5s;">
-      🔗 URL Shortener
+    <h2 class="text-xl font-extrabold mb-6 text-gray-500 text-center fade-up" style="animation-delay: 0.5s;">
+      🔗 Copy any link & Post it here to Short It Fastly 🔗
     </h2>
 
     <input type="text" id="longUrl" placeholder="https://example.com"
@@ -42,6 +46,10 @@
     <p id="result" class="mt-5 text-center font-medium text-gray-700 fade-up" style="animation-delay: 1.2s;"></p>
   </div>
 
-  <script src="./script.js"></script>
+  <footer class="w-full text-center py-4 bg-white/40 dark:bg-slate-800/50 backdrop-blur-md text-gray-700 dark:text-gray-300 text-sm fixed bottom-0 left-0 z-20">
+    © <span id="year"></span> URL Shortener — All Rights Reserved.
+  </footer>
+
+<script src="./script.js"></script>
 </body>
 </html>

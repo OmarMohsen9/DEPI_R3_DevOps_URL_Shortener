@@ -64,4 +64,3 @@
         el.style.animationDelay = `${0.3 + i * 0.2}s`;
       });
     });
- 

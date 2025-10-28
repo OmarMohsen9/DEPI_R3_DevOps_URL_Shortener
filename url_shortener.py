@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, Request
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import RedirectResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, HttpUrl
 from sqlalchemy.orm import Session
@@ -123,7 +123,9 @@ def get_all_urls(db: Session = Depends(get_db)):
     return db.query(URL).all()
 
 
-
-
 # ---- Serve static frontend ----
-api.mount("/", StaticFiles(directory="static", html=True), name="static")
+api.mount("/static", StaticFiles(directory="static"), name="static")
+
+@api.get("/")
+def serve_index():
+    return FileResponse("static/index.html")

@@ -1,0 +1,48 @@
+name: CI Sanity on Develop Merge
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+    types: [closed]
+
+jobs:
+  sanity:
+    name: Sanity checks on develop
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_URL: ${{ secrets.BaseUrl_dev }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start app for sanity
+        run: |
+          set -e
+          docker compose -f docker-compose.yml up -d app
+          for i in {1..90}; do
+            if curl -fsS "${BASE_URL}/metrics" >/dev/null; then
+              echo "App is up"; break; fi; sleep 2;
+          done
+
+      - name: Run basic endpoint checks
+        run: |
+          set -e
+          echo "Checking APIs on ${BASE_URL}"
+          curl -fsS "${BASE_URL}/metrics" | head -n 3
+          curl -fsS -X POST "${BASE_URL}/shorten" \
+            -H 'content-type: application/json' \
+            -d '{"long_url":"https://testdepiurlshortner.com"}'
+          echo "All sanity checks passed successfully"
+
+      - name: Print logs on failure
+        if: failure()
+        run: docker compose logs app
+
+      - name: Tear down containers
+        if: always()
+        run: docker compose -f docker-compose.yml down -v

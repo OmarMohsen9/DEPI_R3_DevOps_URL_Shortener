@@ -3,14 +3,10 @@ name: CI Sanity on Develop Merge
 on:
   push:
     branches: [ develop ]
-  pull_request:
-    branches: [ develop ]
-    types: [closed]
 
 jobs:
   sanity:
     name: Sanity checks on develop
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     env:

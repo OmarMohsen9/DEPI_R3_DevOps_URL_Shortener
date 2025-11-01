@@ -1,0 +1,10 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: Discord Notification
+    receivers:
+      - uid: discord1
+        type: discord
+        settings:
+          url: ${DISCORD_WEBHOOK_URL}
+          message: "{{ .CommonAnnotations.summary }}"

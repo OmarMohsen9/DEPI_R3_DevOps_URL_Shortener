@@ -2,17 +2,18 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import RedirectResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, HttpUrl
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List
 import string, random, os, time
 
 # ---- Prometheus imports ----
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Histogram, generate_latest, CONTENT_TYPE_LATEST, Gauge
 
 # ---- Local imports ----
 from database import Base, engine, get_db
-from models import URL
+from models import Base, URL, LookupFailure
 
 # ---- DB setup ----
 Base.metadata.create_all(bind=engine)
@@ -22,15 +23,9 @@ BASE_URL = os.getenv("BASE_URL", "http://localhost:9000")
 api = FastAPI()
 
 # ---- Define Prometheus Metrics ----
-url_shortened_count = Counter(
-    "url_shortened_total", "Number of URLs successfully shortened"
-)
-redirect_success_count = Counter(
-    "redirect_success_total", "Number of successful redirects"
-)
-lookup_failed_count = Counter(
-    "lookup_failed_total", "Number of failed lookups (404 errors)"
-)
+url_shortened_total_gauge = Gauge("url_shortened_total", "Number of URLs successfully shortened")
+redirect_success_gauge = Gauge("redirect_success_total", "Number of successful redirects")
+lookup_failed_gauge = Gauge("lookup_failed_total", "Number of failed lookups (404 errors)")
 request_latency = Histogram(
     "request_latency_seconds", "Request latency in seconds", ["endpoint"]
 )
@@ -89,9 +84,6 @@ def shorten_url(request: UrlShorten, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_entry)
 
-    # Increment metric
-    url_shortened_count.inc()
-
     return UrlResponse(
         long_url=new_entry.long_url,
         short_url=f"{BASE_URL}/{new_entry.short_code}",
@@ -99,7 +91,10 @@ def shorten_url(request: UrlShorten, db: Session = Depends(get_db)):
 
 # ---- Prometheus Metrics Endpoint ----
 @api.get("/metrics")
-def metrics():
+def metrics(db: Session = Depends(get_db)):
+    url_shortened_total_gauge.set(db.query(func.count(URL.id)).scalar() or 0)
+    redirect_success_gauge.set(db.query(func.sum(URL.clicks)).scalar() or 0)
+    lookup_failed_gauge.set(db.query(func.count(LookupFailure.id)).scalar() or 0)
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @api.get("/{short_code}")
@@ -107,16 +102,14 @@ def redirect_to_original(short_code: str, db: Session = Depends(get_db)):
     entry = db.query(URL).filter(URL.short_code == short_code).first()
 
     if not entry:
-        lookup_failed_count.inc()
+        failure = LookupFailure()
+        db.add(failure)
+        db.commit()
         raise HTTPException(status_code=404, detail="Short URL not found")
 
     entry.clicks += 1
     db.commit()
-
-    redirect_success_count.inc()
-
     return RedirectResponse(url=entry.long_url, status_code=307)
-
 
 @api.get("/admin/urls", response_model=List[UrlDBEntry])
 def get_all_urls(db: Session = Depends(get_db)):

@@ -11,3 +11,10 @@ class URL(Base):
     long_url = Column(String(512), index=True, nullable=False)
     clicks = Column(Integer, default=0)  # ✅ For analytics / Prometheus
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LookupFailure(Base):
+    __tablename__ = "lookup_failures"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+

@@ -16,6 +16,7 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     ports:
       - "9090:9090"
     depends_on:
@@ -40,6 +41,9 @@ services:
       - ./grafana/dashboards:/etc/grafana/dashboards
     networks:
       - monitoring
+
+volumes:
+  prometheus_data:
 
 networks:
   monitoring:

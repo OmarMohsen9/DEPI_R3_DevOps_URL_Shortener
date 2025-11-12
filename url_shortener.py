@@ -19,7 +19,7 @@ from models import Base, URL, LookupFailure
 Base.metadata.create_all(bind=engine)
 
 # ---- App setup ----
-BASE_URL = os.getenv("BASE_URL", "http://localhost:9000")
+BASE_URL = os.getenv("BASE_URL")
 api = FastAPI()
 
 # ---- Define Prometheus Metrics ----

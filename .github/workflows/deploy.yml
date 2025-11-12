@@ -26,7 +26,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           cd /home/ec2-user/DEPI_R3_DevOps_URL_Shortener
-          git pull origin main
+          git pull origin anas/github-actions--deploy
           docker-compose down
           docker-compose up -d --build
           EOF

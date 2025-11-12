@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - anas/github-actions-deploy #test the pipeline
   workflow_dispatch:
 
 jobs:
